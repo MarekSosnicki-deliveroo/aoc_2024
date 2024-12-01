@@ -7,8 +7,5 @@ edition = "2021"
 
 [dependencies]
 boolinator = "2"
-itertools = "0.11"
+itertools = "0.13"
 sscanf = "0.4"
-rayon = "1.8.0"
-good_lp = { version = "1.7.0" }
-z3 = {version="0.12", features = ["static-link-z3"]}
