@@ -7,7 +7,19 @@ fn main() {
     println!("Hello day 6!");
     let input = read_to_string("inputs/day_06/input").unwrap();
 
-    println!("Result is {}", solve(input.trim()))
+    let start_solve = std::time::Instant::now();
+    println!(
+        "Solve result is {}, time {}ms",
+        solve(input.trim()),
+        start_solve.elapsed().as_millis()
+    );
+
+    let start_solve2 = std::time::Instant::now();
+    println!(
+        "Solve_v2 result is {}, time {}ms",
+        solve_v2(input.trim()),
+        start_solve2.elapsed().as_millis()
+    );
 }
 
 fn solve(input: &str) -> i64 {
@@ -152,6 +164,86 @@ fn try_move(map: &[Vec<char>], start: Position, direction: Direction) -> Option<
     }
 }
 
+fn solve_v2(input: &str) -> i64 {
+    let map = input
+        .lines()
+        .map(|line| line.chars().collect_vec())
+        .collect_vec();
+
+    let mut valid_block_position_count: i64 = 0;
+    let start_position = find_start(&map);
+    let mut current_position = find_start(&map);
+    let mut current_direction = Direction::Up;
+    let mut visited: HashMap<Position, HashSet<Direction>> = HashMap::default();
+    visited
+        .entry(current_position)
+        .or_default()
+        .insert(current_direction);
+
+    while let Some(new_position) = try_move(&map, current_position, current_direction) {
+        if is_valid(&map, new_position) {
+            if !visited.contains_key(&new_position) {
+                if is_loop_from(
+                    &map,
+                    &visited,
+                    current_position,
+                    current_direction,
+                    new_position,
+                ) {
+                    valid_block_position_count += 1;
+                }
+            }
+            current_position = new_position;
+            visited
+                .entry(new_position)
+                .or_default()
+                .insert(current_direction);
+        } else {
+            current_direction = current_direction.rotate_right()
+        }
+    }
+    visited.remove(&start_position);
+
+    valid_block_position_count
+}
+
+fn is_loop_from(
+    map: &[Vec<char>],
+    visited_before: &HashMap<Position, HashSet<Direction>>,
+    start_position: Position,
+    start_direction: Direction,
+    additional_blockade: Position,
+) -> bool {
+    let mut current_position = start_position;
+    let mut current_direction = start_direction;
+    let mut visited_in_check: HashMap<Position, HashSet<Direction>> = HashMap::default();
+    while let Some(new_position) = try_move(&map, current_position, current_direction) {
+        if is_valid(&map, new_position) && new_position != additional_blockade {
+            current_position = new_position;
+
+            if visited_before
+                .get(&new_position)
+                .map(|directions| directions.contains(&current_direction))
+                .unwrap_or(false)
+                || visited_in_check
+                    .entry(new_position)
+                    .or_default()
+                    .contains(&current_direction)
+            {
+                return true;
+            }
+
+            visited_in_check
+                .entry(new_position)
+                .or_default()
+                .insert(current_direction);
+        } else {
+            current_direction = current_direction.rotate_right()
+        }
+    }
+    false
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -167,6 +259,6 @@ mod test {
 ........#.\n\
 #.........\n\
 ......#...";
-        assert_eq!(solve(input), 6);
+        assert_eq!(solve_v2(input), 6);
     }
 }
