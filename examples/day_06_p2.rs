@@ -1,5 +1,4 @@
 use itertools::Itertools;
-use sscanf::sscanf;
 use std::collections::{HashMap, HashSet};
 use std::fs::read_to_string;
 
@@ -222,13 +221,13 @@ fn is_loop_from(
             current_position = new_position;
 
             if visited_before
-                .get(&new_position)
+                .get(&current_position)
                 .map(|directions| directions.contains(&current_direction))
                 .unwrap_or(false)
                 || visited_in_check
-                    .entry(new_position)
-                    .or_default()
-                    .contains(&current_direction)
+                .get(&current_position)
+                .map(|directions| directions.contains(&current_direction))
+                .unwrap_or(false)
             {
                 return true;
             }
@@ -238,6 +237,9 @@ fn is_loop_from(
                 .or_default()
                 .insert(current_direction);
         } else {
+
+
+
             current_direction = current_direction.rotate_right()
         }
     }
