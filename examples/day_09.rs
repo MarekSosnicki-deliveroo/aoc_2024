@@ -5,7 +5,7 @@ use std::collections::{HashMap, HashSet};
 use std::fs::read_to_string;
 
 fn main() {
-    println!("Hello day 8!");
+    println!("Hello day 9!");
     let input = read_to_string("inputs/day_09/input").unwrap();
 
     let start_solve = std::time::Instant::now();
