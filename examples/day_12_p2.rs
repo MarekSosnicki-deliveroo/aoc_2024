@@ -1,4 +1,4 @@
-use itertools::Itertools;
+use itertools::{any, Itertools};
 use std::collections::{HashSet};
 use std::fs::read_to_string;
 
@@ -23,7 +23,7 @@ fn solve(input: &str) -> i64 {
     let mut result: i64 = 0;
 
     let mut to_visit_current_region: Vec<Position> = vec![Position { row: 0, column: 0 }];
-    let mut current_region_fences : Vec<(Position, Position)> = Vec::new();
+    let mut current_region_fences : Vec<FencePosition> = Vec::new();
     let mut current_region_size = 0;
 
     let mut to_visit_other_regions: Vec<Position> = vec![];
@@ -49,11 +49,17 @@ fn solve(input: &str) -> i64 {
                         to_visit_current_region.push(neighbour);
                     } else {
                         to_visit_other_regions.push(neighbour);
-                        current_region_fences.push((position_in_current_region, neighbour))
+                        current_region_fences.push(FencePosition{
+                            group_side: position_in_current_region,
+                            outer_side: neighbour,
+                        })
                     }
 
                 } else {
-                    current_region_fences.push((position_in_current_region, neighbour))
+                    current_region_fences.push(FencePosition{
+                        group_side: position_in_current_region,
+                        outer_side: neighbour,
+                    })
                 }
 
             }
@@ -100,15 +106,53 @@ fn neighbour_value(map: &[Vec<char>], position: &Position) -> Option<char> {
     }
 }
 
-fn fences_sides(fences: &[(Position, Position)]) -> i64 {
-    fences.len() as i64
+fn fences_sides(fences: &[FencePosition]) -> i64 {
+    if fences.is_empty() {
+        return 0
+    }
+    let mut fences_left = fences.into_iter().cloned().collect_vec();
+    let mut fences_groups = vec![vec![fences_left.pop().unwrap()]];
+
+
+    while !fences_left.is_empty() {
+
+        let current_group = fences_groups.last_mut().unwrap();
+
+        let fences_left_matching_to_group_position = fences_left.iter().position(|fence| current_group.iter().any(|group_fence| fence_matching(group_fence, fence)));
+
+        if let Some(matching_position) = fences_left_matching_to_group_position {
+            current_group.push(fences_left.remove(matching_position))
+        } else {
+            fences_groups.push(vec![fences_left.pop().unwrap()])
+        }
+    }
+
+    fences_groups.len() as i64
 }
 
+fn fence_matching(f1: &FencePosition, f2: &FencePosition) -> bool{
+    let f1_row_diff = f1.group_side.row - f1.outer_side.row;
+    let f1_column_diff = f1.group_side.column - f1.outer_side.column;
+
+    let f2_row_diff = f2.group_side.row - f2.outer_side.row;
+    let f2_column_diff = f2.group_side.column - f2.outer_side.column;
+
+
+    f1_row_diff == f2_row_diff && f1_column_diff == f2_column_diff
+        && neighbours(&f1.outer_side).contains(&f2.outer_side)
+        && neighbours(&f1.group_side).contains(&f2.group_side)
+}
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq)]
 struct Position {
     row: i64,
     column: i64,
+}
+
+#[derive(Copy, Clone, Hash, Eq, PartialEq)]
+struct FencePosition {
+    group_side: Position,
+    outer_side: Position
 }
 
 #[cfg(test)]
@@ -127,6 +171,6 @@ VVIIICJJEE\n\
 MIIIIIJJEE\n\
 MIIISIJEEE\n\
 MMMISSJEEE";
-        assert_eq!(solve(input), 1930);
+        assert_eq!(solve(input), 1206);
     }
 }
