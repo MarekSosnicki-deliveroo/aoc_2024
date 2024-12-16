@@ -1,7 +1,5 @@
 extern crate core;
 
-use boolinator::Boolinator;
-use itertools::Itertools;
 use sscanf::sscanf;
 use std::fs::read_to_string;
 
