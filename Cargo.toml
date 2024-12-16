@@ -10,3 +10,4 @@ boolinator = "2"
 itertools = "0.13"
 sscanf = "0.4"
 gcd = "2"
+good_lp = { version = "1.7.0" }
