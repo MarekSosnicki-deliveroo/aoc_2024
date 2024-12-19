@@ -1,8 +1,5 @@
-use boolinator::Boolinator;
-use good_lp::{constraint, default_solver, variable, variables, Solution, SolverModel};
 use itertools::Itertools;
-use sscanf::sscanf;
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap};
 use std::fs::read_to_string;
 
 fn main() {
@@ -27,12 +24,13 @@ fn solve(input: &str) -> i64 {
         .sorted_by_key(|p| -(p.len() as i64))
         .collect_vec();
 
+    let mut cache = Default::default();
+
     input_split
         .next()
         .unwrap()
         .split("\n")
         .map(|design| {
-            let mut cache = Default::default();
             count_options_recursive(design.trim(), &patterns, &mut cache)
         })
         .sum()
