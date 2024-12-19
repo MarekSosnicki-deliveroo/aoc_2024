@@ -12,12 +12,12 @@ fn main() {
     let start_solve = std::time::Instant::now();
     println!(
         "Solve result is {} time {}ms",
-        solve(input.trim(), 71, 71),
+        solve(input.trim(), 71, 71, 1024),
         start_solve.elapsed().as_millis()
     );
 }
 
-fn solve(input: &str, rows: usize, columns: usize) -> String {
+fn solve(input: &str, rows: usize, columns: usize, simulate_start: i64) -> String {
     let mut map: Vec<Vec<Option<i64>>> = vec![vec![None; columns]; rows];
 
     let mut time = 1;
@@ -30,7 +30,7 @@ fn solve(input: &str, rows: usize, columns: usize) -> String {
         time += 1;
     }
 
-    let mut earliest = 0;
+    let mut earliest = simulate_start;
     while let Some(earliest_time) = find_earliest_block_in_shortest_path(earliest, &mut map) {
         earliest = earliest_time;
         println!("Checking earliest {}", earliest)
@@ -68,8 +68,8 @@ fn find_earliest_block_in_shortest_path(simulate_time: i64, mut map: &mut Vec<Ve
                         value_map.entry(new_position).or_insert((i64::MAX, None));
                     if current_follow_value.0 > time_after_move {
                         *current_follow_value = (time_after_move, Some(visiting_position));
+                        to_visit.push(new_position);
                     }
-                    to_visit.push(new_position);
                 }
             }
         }
@@ -221,6 +221,6 @@ mod test {
 0,5\n\
 1,6\n\
 2,0";
-        assert_eq!(solve(input, 7, 7), "6,1");
+        assert_eq!(solve(input, 7, 7, 12), "6,1");
     }
 }
