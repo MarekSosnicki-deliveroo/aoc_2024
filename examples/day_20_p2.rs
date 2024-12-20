@@ -134,38 +134,14 @@ fn find_possible_shortcuts_from(
     start: Position,
     shortest_path: &[Position],
 ) -> Vec<(Position, Position, i64)> {
-    let mut to_visit = vec![start];
-    let mut value_map: HashMap<Position, i64> = Default::default();
-    value_map.insert(to_visit[0], 0);
-    let mut visited: HashSet<Position> = Default::default();
-    while let Some(visiting_position) = to_visit.pop() {
-        if visited.contains(&visiting_position) {
-            continue;
-        }
-        visited.insert(visiting_position);
-
-        let visiting_value = value_map.get(&visiting_position).unwrap();
-
-        let value_after_move = visiting_value + 1;
-        if value_after_move <= 20 {
-            for direction in all_directions() {
-                if let Some(new_position) = try_move(&map, visiting_position, direction) {
-                    let current_follow_value = value_map.entry(new_position).or_insert(i64::MAX);
-                    if *current_follow_value > value_after_move {
-                        *current_follow_value = value_after_move;
-                    }
-                    to_visit.push(new_position);
-                }
-            }
-            to_visit.sort_by_key(|v| -value_map.get(v).unwrap());
-        }
-    }
 
     let mut result = vec![];
     for shortest_path_position in shortest_path.iter() {
         if *shortest_path_position != start {
-            if let Some(shortut_len) = value_map.get(shortest_path_position) {
-                result.push((start, *shortest_path_position, *shortut_len))
+            let distance = (shortest_path_position.column as i64 - start.column as i64).abs() + (shortest_path_position.row as i64 - start.row as i64).abs();
+
+            if distance <= 20 {
+                result.push((start, *shortest_path_position, distance))
             }
         }
     }
