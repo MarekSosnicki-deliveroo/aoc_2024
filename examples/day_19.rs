@@ -1,8 +1,6 @@
 use boolinator::Boolinator;
-use good_lp::{constraint, default_solver, variable, variables, Solution, SolverModel};
+use good_lp::{Solution, SolverModel};
 use itertools::Itertools;
-use sscanf::sscanf;
-use std::collections::{HashMap, HashSet};
 use std::fs::read_to_string;
 
 fn main() {
